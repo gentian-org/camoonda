@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Deployment Tree View -->
+    <record id="view_deployment_tree" model="ir.ui.view">
+        <field name="name">camoonda.deployment.tree</field>
+        <field name="model">camoonda.deployment</field>
+        <field name="arch" type="xml">
+            <list string="Deployments">
+                <field name="name"/>
+                <field name="deployment_time"/>
+                <field name="deployed_by"/>
+                <field name="source"/>
+                <field name="process_definition_count"/>
+                <field name="resource_count"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Deployment Form View -->
+    <record id="view_deployment_form" model="ir.ui.view">
+        <field name="name">camoonda.deployment.form</field>
+        <field name="model">camoonda.deployment</field>
+        <field name="arch" type="xml">
+            <form string="Deployment">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_process_definitions"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-code-o"
+                                invisible="('process_definition_count', '=', 0)">
+                            <field name="process_definition_count" widget="statinfo" string="Processes"/>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="source"/>
+                            <field name="deployment_time"/>
+                        </group>
+                        <group>
+                            <field name="deployed_by"/>
+                            <field name="resource_count"/>
+                        </group>
+                    </group>
+                    <group string="Notes">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+                    <notebook>
+                        <page string="Process Definitions">
+                            <field name="process_definition_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="key"/>
+                                    <field name="version"/>
+                                    <field name="is_latest_version"/>
+                                    <field name="active"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Resources">
+                            <field name="resource_ids">
+                                <list>
+                                    <field name="resource_name"/>
+                                    <field name="resource_type"/>
+                                    <field name="mime_type"/>
+                                    <field name="size"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Deployment Action -->
+    <record id="action_deployment" model="ir.actions.act_window">
+        <field name="name">Deployments</field>
+        <field name="res_model">camoonda.deployment</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Deployment
+            </p>
+            <p>
+                Deployments group related process definitions and resources together.
+                Each deployment represents a snapshot of your process models at a specific time.
+            </p>
+        </field>
+    </record>
+
+    <!-- Deployment Resource Tree View -->
+    <record id="view_deployment_resource_tree" model="ir.ui.view">
+        <field name="name">camoonda.deployment.resource.tree</field>
+        <field name="model">camoonda.deployment.resource</field>
+        <field name="arch" type="xml">
+            <list string="Deployment Resources">
+                <field name="resource_name"/>
+                <field name="resource_type"/>
+                <field name="mime_type"/>
+                <field name="size"/>
+                <field name="deployment_id"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Deployment Resource Form View -->
+    <record id="view_deployment_resource_form" model="ir.ui.view">
+        <field name="name">camoonda.deployment.resource.form</field>
+        <field name="model">camoonda.deployment.resource</field>
+        <field name="arch" type="xml">
+            <form string="Deployment Resource">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="resource_name"/>
+                            <field name="resource_type"/>
+                            <field name="deployment_id"/>
+                        </group>
+                        <group>
+                            <field name="mime_type"/>
+                            <field name="size"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Binary Content" invisible="('resource_type', '!=', 'other')">
+                            <field name="content" filename="resource_name"/>
+                        </page>
+                        <page string="Text Content" invisible="('resource_type', '=', 'other')">
+                            <field name="content_text" widget="ace" options="{'mode': 'xml'}"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

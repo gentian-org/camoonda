@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Main Menu -->
+    <menuitem id="menu_camoonda_root" 
+              name="Camoonda" 
+              sequence="100" 
+              web_icon="camoonda,static/description/icon.png"/>
+
+    <!-- Process Menu -->
+    <menuitem id="menu_camoonda_process" 
+              name="Processes" 
+              parent="menu_camoonda_root" 
+              sequence="10"/>
+
+    <menuitem id="menu_camoonda_deployment" 
+              name="Deployments" 
+              parent="menu_camoonda_process" 
+              action="action_deployment" 
+              sequence="5"/>
+
+    <menuitem id="menu_camoonda_process_definition" 
+              name="Process Definitions" 
+              parent="menu_camoonda_process" 
+              action="action_process_definition" 
+              sequence="10"/>
+
+    <menuitem id="menu_camoonda_process_instance" 
+              name="Process Instances" 
+              parent="menu_camoonda_process" 
+              action="action_process_instance" 
+              sequence="20"/>
+
+    <menuitem id="menu_camoonda_process_incident" 
+              name="Incidents" 
+              parent="menu_camoonda_process" 
+              action="action_process_incident" 
+              sequence="30"/>
+</odoo>

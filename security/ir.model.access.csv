@@ -1,0 +1,17 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_camoonda_deployment_user,camoonda.deployment user,model_camoonda_deployment,base.group_user,1,0,0,0
+access_camoonda_deployment_manager,camoonda.deployment manager,model_camoonda_deployment,base.group_system,1,1,1,1
+access_camoonda_deployment_resource_user,camoonda.deployment.resource user,model_camoonda_deployment_resource,base.group_user,1,0,0,0
+access_camoonda_deployment_resource_manager,camoonda.deployment.resource manager,model_camoonda_deployment_resource,base.group_system,1,1,1,1
+access_camoonda_process_definition_user,camoonda.process.definition user,model_camoonda_process_definition,base.group_user,1,0,0,0
+access_camoonda_process_definition_manager,camoonda.process.definition manager,model_camoonda_process_definition,base.group_system,1,1,1,1
+access_camoonda_process_instance_user,camoonda.process.instance user,model_camoonda_process_instance,base.group_user,1,1,1,0
+access_camoonda_process_instance_manager,camoonda.process.instance manager,model_camoonda_process_instance,base.group_system,1,1,1,1
+access_camoonda_process_token_user,camoonda.process.token user,model_camoonda_process_token,base.group_user,1,0,0,0
+access_camoonda_process_token_manager,camoonda.process.token manager,model_camoonda_process_token,base.group_system,1,1,1,1
+access_camoonda_process_incident_user,camoonda.process.incident user,model_camoonda_process_incident,base.group_user,1,1,1,0
+access_camoonda_process_incident_manager,camoonda.process.incident manager,model_camoonda_process_incident,base.group_system,1,1,1,1
+access_camoonda_element_implementation_user,camoonda.element.implementation user,model_camoonda_element_implementation,base.group_user,1,0,0,0
+access_camoonda_element_implementation_manager,camoonda.element.implementation manager,model_camoonda_element_implementation,base.group_system,1,1,1,1
+access_camoonda_execution_history_user,camoonda.execution.history user,model_camoonda_execution_history,base.group_user,1,0,0,0
+access_camoonda_execution_history_manager,camoonda.execution.history manager,model_camoonda_execution_history,base.group_system,1,1,1,1

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Process Definition Tree View -->
+    <record id="view_process_definition_tree" model="ir.ui.view">
+        <field name="name">camoonda.process.definition.tree</field>
+        <field name="model">camoonda.process.definition</field>
+        <field name="arch" type="xml">
+            <list string="Process Definitions">
+                <field name="name"/>
+                <field name="key"/>
+                <field name="version"/>
+                <field name="category"/>
+                <field name="instance_count"/>
+                <field name="active"/>
+                <field name="is_latest_version"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Process Definition Form View -->
+    <record id="view_process_definition_form" model="ir.ui.view">
+        <field name="name">camoonda.process.definition.form</field>
+        <field name="model">camoonda.process.definition</field>
+        <field name="arch" type="xml">
+            <form string="Process Definition">
+                <header>
+                    <field name="active" widget="boolean_toggle"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(action_process_instance)d" 
+                                type="action" 
+                                class="oe_stat_button" 
+                                icon="fa-cogs"
+                                context="{'default_process_id': id}">
+                            <field name="instance_count" widget="statinfo" string="Instances"/>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="key"/>
+                            <field name="version"/>
+                            <field name="category"/>
+                        </group>
+                        <group>
+                            <field name="deployment_id"/>
+                            <field name="resource_name"/>
+                            <field name="is_latest_version"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description"/>
+                    </group>
+                    <notebook>
+                        <page string="BPMN XML">
+                            <field name="bpmn_xml" widget="ace" options="{'mode': 'xml'}"/>
+                        </page>
+                        <page string="Element Implementations">
+                            <field name="element_implementation_ids">
+                                <list>
+                                    <field name="element_id"/>
+                                    <field name="element_name"/>
+                                    <field name="element_type"/>
+                                    <field name="implementation_type"/>
+                                    <field name="active"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Process Instances">
+                            <field name="instance_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="state"/>
+                                    <field name="started_date"/>
+                                    <field name="started_by"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Process Definition Action -->
+    <record id="action_process_definition" model="ir.actions.act_window">
+        <field name="name">Process Definitions</field>
+        <field name="res_model">camoonda.process.definition</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Process Definition
+            </p>
+            <p>
+                Process definitions are BPMN 2.0 templates that define the structure of your business processes.
+            </p>
+        </field>
+    </record>
+</odoo>

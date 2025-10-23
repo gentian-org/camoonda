@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Process Incident Tree View -->
+    <record id="view_process_incident_tree" model="ir.ui.view">
+        <field name="name">camoonda.process.incident.tree</field>
+        <field name="model">camoonda.process.incident</field>
+        <field name="arch" type="xml">
+            <list string="Process Incidents" 
+                  decoration-danger="state=='created' and severity=='critical'"
+                  decoration-warning="state=='created' and severity=='high'"
+                  decoration-info="state=='resolved'">
+                <field name="create_date"/>
+                <field name="incident_type"/>
+                <field name="element_id"/>
+                <field name="instance_id"/>
+                <field name="severity"/>
+                <field name="state"/>
+                <field name="error_message"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Process Incident Form View -->
+    <record id="view_process_incident_form" model="ir.ui.view">
+        <field name="name">camoonda.process.incident.form</field>
+        <field name="model">camoonda.process.incident</field>
+        <field name="arch" type="xml">
+            <form string="Process Incident">
+                <header>
+                    <button name="action_resolve" 
+                            string="Resolve" 
+                            type="object" 
+                            class="btn-primary" 
+                            invisible="('state', '=', 'resolved')"/>
+                    <button name="action_retry_job" 
+                            string="Retry Job" 
+                            type="object" 
+                            invisible="state == 'resolved' or incident_type not in ['job_no_retries', 'job_timeout']"/>
+                    <button name="action_view_process_instance" 
+                            string="View Process Instance" 
+                            type="object" 
+                            class="oe_link"/>
+                    <field name="state" widget="statusbar" statusbar_visible="created,resolved"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_process_instance"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-tasks">
+                            <span>Process Instance</span>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Resolved" bg_color="bg-success" invisible="('state', '!=', 'resolved')"/>
+                    <widget name="web_ribbon" title="Critical" bg_color="bg-danger" invisible="'|', ('state', '=', 'resolved'), ('severity', '!=', 'critical')"/>
+                    <group>
+                        <group>
+                            <field name="incident_type"/>
+                            <field name="severity"/>
+                            <field name="created_date"/>
+                            <field name="instance_id"/>
+                            <field name="process_id"/>
+                        </group>
+                        <group>
+                            <field name="element_id"/>
+                            <field name="element_name"/>
+                            <field name="element_type"/>
+                            <field name="token_id"/>
+                        </group>
+                    </group>
+                    <group string="Error Details">
+                        <field name="error_type"/>
+                        <field name="error_message" nolabel="1"/>
+                    </group>
+                    <notebook>
+                        <page string="Stack Trace" invisible="('stack_trace', '=', False)">
+                            <field name="stack_trace" widget="text"/>
+                        </page>
+                        <page string="Job Information" invisible="('job_key', '=', False)">
+                            <group>
+                                <field name="job_key"/>
+                                <field name="job_retries"/>
+                            </group>
+                        </page>
+                        <page string="Resolution" invisible="('state', '!=', 'resolved')">
+                            <group>
+                                <field name="resolved_date"/>
+                                <field name="resolved_by"/>
+                                <field name="resolution_notes"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Process Incident Search View -->
+    <record id="view_process_incident_search" model="ir.ui.view">
+        <field name="name">camoonda.process.incident.search</field>
+        <field name="model">camoonda.process.incident</field>
+        <field name="arch" type="xml">
+            <search string="Search Incidents">
+                <field name="instance_id"/>
+                <field name="element_id"/>
+                <field name="error_message"/>
+                <filter string="Active Incidents" name="active_incidents" domain="[('state', '=', 'created')]"/>
+                <filter string="Resolved" name="resolved" domain="[('state', '=', 'resolved')]"/>
+                <separator/>
+                <filter string="Critical" name="critical" domain="[('severity', '=', 'critical')]"/>
+                <filter string="High Priority" name="high" domain="[('severity', '=', 'high')]"/>
+                <filter string="Medium Priority" name="medium" domain="[('severity', '=', 'medium')]"/>
+                <separator/>
+                <filter string="Job Errors" name="job_errors" domain="[('incident_type', 'in', ['job_no_retries', 'job_timeout'])]"/>
+                <filter string="Condition Errors" name="condition_errors" domain="[('incident_type', '=', 'condition_error')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Incident Type" name="group_type" context="{'group_by': 'incident_type'}"/>
+                    <filter string="Severity" name="group_severity" context="{'group_by': 'severity'}"/>
+                    <filter string="Process Instance" name="group_instance" context="{'group_by': 'instance_id'}"/>
+                    <filter string="Created Date" name="group_date" context="{'group_by': 'created_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Process Incident Action -->
+    <record id="action_process_incident" model="ir.actions.act_window">
+        <field name="name">Process Incidents</field>
+        <field name="res_model">camoonda.process.incident</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_active_incidents': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No incidents found
+            </p>
+            <p>
+                Incidents are automatically created when errors occur during process execution.
+                You can resolve incidents manually or retry failed jobs.
+            </p>
+        </field>
+    </record>
+</odoo>
