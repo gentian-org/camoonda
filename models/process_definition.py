@@ -28,6 +28,16 @@ class ProcessDefinition(models.Model):
     bpmn_xml = fields.Text(string='BPMN XML', help="BPMN 2.0 XML definition")
     description = fields.Text(string='Description')
     
+    # BPMN module integration (optional - only works if BPMN module is installed)
+    bpmn_process_id = fields.Many2one(
+        'bpmn.process',
+        string='BPMN Diagram',
+        help="Link to the visual BPMN diagram in the BPMN module",
+        ondelete='set null',
+        # This field will be inactive if bpmn module is not installed
+        # but won't cause errors
+    )
+    
     active = fields.Boolean(string='Active', default=True)
     is_latest_version = fields.Boolean(
         string='Latest Version',
@@ -47,6 +57,18 @@ class ProcessDefinition(models.Model):
     # Relations
     instance_ids = fields.One2many('camoonda.process.instance', 'process_id', string='Process Instances')
     instance_count = fields.Integer(string='Instance Count', compute='_compute_instance_count')
+    
+    element_ids = fields.One2many(
+        'process.element',
+        'process_definition_id',
+        string='Process Elements'
+    )
+    
+    flow_ids = fields.One2many(
+        'sequence.flow',
+        'process_definition_id',
+        string='Sequence Flows'
+    )
     
     element_implementation_ids = fields.One2many(
         'camoonda.element.implementation', 

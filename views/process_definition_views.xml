@@ -1,5 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- Actions defined first -->
+    <record id="action_process_definition" model="ir.actions.act_window">
+        <field name="name">Process Definitions</field>
+        <field name="res_model">camoonda.process.definition</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Process Definition
+            </p>
+            <p>
+                Process definitions are BPMN 2.0 templates that define the structure of your business processes.
+            </p>
+        </field>
+    </record>
+    
+    <record id="action_process_element" model="ir.actions.act_window">
+        <field name="name">Process Elements</field>
+        <field name="res_model">process.element</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_process': active_id}</field>
+    </record>
+    
+    <record id="action_sequence_flow" model="ir.actions.act_window">
+        <field name="name">Sequence Flows</field>
+        <field name="res_model">sequence.flow</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_process': active_id}</field>
+    </record>
+
     <!-- Process Definition Tree View -->
     <record id="view_process_definition_tree" model="ir.ui.view">
         <field name="name">camoonda.process.definition.tree</field>
@@ -53,6 +82,40 @@
                         <field name="description"/>
                     </group>
                     <notebook>
+                        <page string="Process Topology">
+                            <group>
+                                <button name="%(action_process_element)d" 
+                                        type="action" 
+                                        string="View All Elements" 
+                                        class="oe_highlight"
+                                        context="{'search_default_process': id}"/>
+                                <button name="%(action_sequence_flow)d" 
+                                        type="action" 
+                                        string="View All Flows" 
+                                        context="{'search_default_process': id}"/>
+                            </group>
+                            <group string="Elements">
+                                <field name="element_ids" nolabel="1">
+                                    <list string="Elements">
+                                        <field name="element_id"/>
+                                        <field name="element_name"/>
+                                        <field name="element_type"/>
+                                        <field name="execution_type"/>
+                                        <field name="is_configured" widget="boolean"/>
+                                    </list>
+                                </field>
+                            </group>
+                            <group string="Flows">
+                                <field name="flow_ids" nolabel="1">
+                                    <list string="Sequence Flows">
+                                        <field name="flow_id"/>
+                                        <field name="source_element_id"/>
+                                        <field name="target_element_id"/>
+                                        <field name="condition_type"/>
+                                    </list>
+                                </field>
+                            </group>
+                        </page>
                         <page string="BPMN XML">
                             <field name="bpmn_xml" widget="ace" options="{'mode': 'xml'}"/>
                         </page>
@@ -83,18 +146,4 @@
         </field>
     </record>
 
-    <!-- Process Definition Action -->
-    <record id="action_process_definition" model="ir.actions.act_window">
-        <field name="name">Process Definitions</field>
-        <field name="res_model">camoonda.process.definition</field>
-        <field name="view_mode">list,form</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Create your first Process Definition
-            </p>
-            <p>
-                Process definitions are BPMN 2.0 templates that define the structure of your business processes.
-            </p>
-        </field>
-    </record>
 </odoo>

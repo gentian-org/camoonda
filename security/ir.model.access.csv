@@ -5,6 +5,10 @@ access_camoonda_deployment_resource_user,camoonda.deployment.resource user,model
 access_camoonda_deployment_resource_manager,camoonda.deployment.resource manager,model_camoonda_deployment_resource,base.group_system,1,1,1,1
 access_camoonda_process_definition_user,camoonda.process.definition user,model_camoonda_process_definition,base.group_user,1,0,0,0
 access_camoonda_process_definition_manager,camoonda.process.definition manager,model_camoonda_process_definition,base.group_system,1,1,1,1
+access_process_element_user,process.element user,model_process_element,base.group_user,1,1,1,0
+access_process_element_manager,process.element manager,model_process_element,base.group_system,1,1,1,1
+access_sequence_flow_user,sequence.flow user,model_sequence_flow,base.group_user,1,1,1,0
+access_sequence_flow_manager,sequence.flow manager,model_sequence_flow,base.group_system,1,1,1,1
 access_camoonda_process_instance_user,camoonda.process.instance user,model_camoonda_process_instance,base.group_user,1,1,1,0
 access_camoonda_process_instance_manager,camoonda.process.instance manager,model_camoonda_process_instance,base.group_system,1,1,1,1
 access_camoonda_process_token_user,camoonda.process.token user,model_camoonda_process_token,base.group_user,1,0,0,0

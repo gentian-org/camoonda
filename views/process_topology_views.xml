@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Process Element Views -->
+    <record id="view_process_element_tree" model="ir.ui.view">
+        <field name="name">process.element.tree</field>
+        <field name="model">process.element</field>
+        <field name="arch" type="xml">
+            <list string="Process Elements">
+                <field name="element_id"/>
+                <field name="element_name"/>
+                <field name="element_type"/>
+                <field name="execution_type"/>
+                <field name="is_configured" widget="boolean"/>
+                <field name="odoo_model"/>
+                <field name="odoo_method"/>
+                <field name="active" widget="boolean"/>
+            </list>
+        </field>
+    </record>
+    
+    <record id="view_process_element_form" model="ir.ui.view">
+        <field name="name">process.element.form</field>
+        <field name="model">process.element</field>
+        <field name="arch" type="xml">
+            <form string="Process Element">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <field name="is_configured" invisible="1"/>
+                        <widget name="web_ribbon" title="Configured" 
+                                invisible="not is_configured"/>
+                    </div>
+                    
+                    <group>
+                        <group>
+                            <field name="element_id"/>
+                            <field name="element_name"/>
+                            <field name="element_type"/>
+                            <field name="process_definition_id"/>
+                        </group>
+                        <group>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Execution" name="execution">
+                            <group>
+                                <field name="execution_type" widget="radio"/>
+                            </group>
+                            
+                            <group string="Odoo Method Call" 
+                                   invisible="execution_type != 'service'">
+                                <field name="odoo_model"/>
+                                <field name="odoo_method"/>
+                            </group>
+                            
+                            <group string="User Task" 
+                                   invisible="execution_type != 'user_task'">
+                                <field name="odoo_model"/>
+                                <field name="form_view_id"/>
+                                <field name="form_mode" widget="radio"/>
+                                <field name="assigned_user_ids" widget="many2many_tags"/>
+                                <field name="assigned_group_ids" widget="many2many_tags"/>
+                            </group>
+                            
+                            <group string="Script" 
+                                   invisible="execution_type != 'script'">
+                                <field name="python_code" 
+                                       widget="ace" 
+                                       options="{'mode': 'python'}"/>
+                            </group>
+                            
+                            <group string="Stoodio Module" 
+                                   invisible="execution_type != 'stoodio'">
+                                <field name="stoodio_module_id"/>
+                            </group>
+                        </page>
+                        
+                        <page string="Variables" name="variables">
+                            <group>
+                                <field name="input_mapping" widget="ace" options="{'mode': 'json'}"/>
+                                <field name="output_mapping" widget="ace" options="{'mode': 'json'}"/>
+                            </group>
+                        </page>
+                        
+                        <page string="Flows" name="flows">
+                            <group>
+                                <field name="incoming_flow_ids" nolabel="1">
+                                    <list string="Incoming Flows">
+                                        <field name="flow_id"/>
+                                        <field name="flow_name"/>
+                                        <field name="source_element_id"/>
+                                        <field name="condition_type"/>
+                                    </list>
+                                </field>
+                                <field name="outgoing_flow_ids" nolabel="1">
+                                    <list string="Outgoing Flows">
+                                        <field name="flow_id"/>
+                                        <field name="flow_name"/>
+                                        <field name="target_element_id"/>
+                                        <field name="condition_type"/>
+                                    </list>
+                                </field>
+                            </group>
+                        </page>
+                        
+                        <page string="Advanced" name="advanced">
+                            <group>
+                                <group>
+                                    <field name="async_execution"/>
+                                    <field name="retry_count"/>
+                                    <field name="timeout_seconds"/>
+                                </group>
+                                <group>
+                                    <field name="context_expression" widget="ace" options="{'mode': 'python'}"/>
+                                    <field name="condition_expression" widget="ace" options="{'mode': 'python'}"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="notes"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Sequence Flow Views -->
+    <record id="view_sequence_flow_tree" model="ir.ui.view">
+        <field name="name">sequence.flow.tree</field>
+        <field name="model">sequence.flow</field>
+        <field name="arch" type="xml">
+            <list string="Sequence Flows">
+                <field name="flow_id"/>
+                <field name="flow_name"/>
+                <field name="source_element_id"/>
+                <field name="target_element_id"/>
+                <field name="condition_type"/>
+                <field name="is_default" widget="boolean"/>
+                <field name="sequence"/>
+                <field name="active" widget="boolean"/>
+            </list>
+        </field>
+    </record>
+    
+    <record id="view_sequence_flow_form" model="ir.ui.view">
+        <field name="name">sequence.flow.form</field>
+        <field name="model">sequence.flow</field>
+        <field name="arch" type="xml">
+            <form string="Sequence Flow">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="flow_id"/>
+                            <field name="flow_name"/>
+                            <field name="process_definition_id"/>
+                        </group>
+                        <group>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    
+                    <group string="Connection">
+                        <field name="source_element_id"/>
+                        <field name="target_element_id"/>
+                    </group>
+                    
+                    <group string="Condition">
+                        <field name="condition_type" widget="radio"/>
+                        <field name="is_default" invisible="condition_type != 'default'"/>
+                        <field name="condition_expression" 
+                               widget="ace" 
+                               options="{'mode': 'python'}"
+                               invisible="condition_type != 'expression'"/>
+                    </group>
+                    
+                    <group>
+                        <field name="notes"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

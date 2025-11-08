@@ -25,6 +25,7 @@ Features:
     'depends': ['base', 'mail'],
     'data': [
         'security/ir.model.access.csv',
+        'views/process_topology_views.xml',
         'views/deployment_views.xml',
         'views/process_instance_views.xml',
         'views/process_incident_views.xml',
