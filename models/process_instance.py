@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api
+from odoo.exceptions import UserError
 
 
 class ProcessInstance(models.Model):
@@ -9,7 +10,7 @@ class ProcessInstance(models.Model):
     _order = 'create_date desc'
     _rec_name = 'display_name'
 
-    name = fields.Char(string='Instance Name', required=True)
+    name = fields.Char(string='Instance Name', compute='_compute_name', store=True)
     business_key = fields.Char(
         string='Business Key',
         index=True,
@@ -17,17 +18,37 @@ class ProcessInstance(models.Model):
     )
     display_name = fields.Char(string='Display Name', compute='_compute_display_name', store=True)
     
-    process_id = fields.Many2one('camoonda.process.definition', string='Process Definition', required=True, ondelete='restrict')
-    process_key = fields.Char(related='process_id.key', string='Process Key', store=True)
+    process_definition_id = fields.Many2one(
+        'camoonda.process.definition',
+        string='Process Definition',
+        required=True,
+        ondelete='restrict'
+    )
+    
+    # Backward compatibility alias
+    process_id = fields.Many2one(
+        'camoonda.process.definition',
+        related='process_definition_id',
+        string='Process Definition (Alias)',
+        store=False
+    )
+    
+    process_key = fields.Char(related='process_definition_id.key', string='Process Key', store=True)
     
     state = fields.Selection([
-        ('ready', 'Ready'),
-        ('running', 'Running'),
+        ('active', 'Active'),
         ('suspended', 'Suspended'),
         ('completed', 'Completed'),
         ('failed', 'Failed'),
         ('cancelled', 'Cancelled')
-    ], string='State', default='ready', required=True, tracking=True)
+    ], string='State', default='active', required=True, tracking=True)
+    
+    # Simulation mode - skip real execution
+    simulation_mode = fields.Boolean(
+        string='Simulation Mode',
+        default=False,
+        help="If true, process runs in simulation mode without executing real operations"
+    )
     
     # Process variables (stored as JSON)
     variables = fields.Json(string='Process Variables', default={})
@@ -39,7 +60,7 @@ class ProcessInstance(models.Model):
     
     # Execution tracking
     started_by = fields.Many2one('res.users', string='Started By', default=lambda self: self.env.user)
-    started_date = fields.Datetime(string='Started Date')
+    started_date = fields.Datetime(string='Started Date', default=fields.Datetime.now)
     completed_date = fields.Datetime(string='Completed Date')
     
     # Relations
@@ -57,13 +78,26 @@ class ProcessInstance(models.Model):
     incident_count = fields.Integer(string='Incident Count', compute='_compute_incident_count', store=True)
     has_incidents = fields.Boolean(string='Has Incidents', compute='_compute_incident_count', store=True)
     
-    @api.depends('name', 'process_id.name', 'create_date')
+    @api.depends('process_definition_id', 'business_key')
+    def _compute_name(self):
+        """Auto-generate name if not set"""
+        for record in self:
+            if record.process_definition_id:
+                if record.business_key:
+                    record.name = f"{record.process_definition_id.name} - {record.business_key}"
+                elif record.id:
+                    record.name = f"{record.process_definition_id.name} #{record.id}"
+                else:
+                    record.name = f"{record.process_definition_id.name} #New"
+            elif record.id:
+                record.name = f"Process Instance #{record.id}"
+            else:
+                record.name = "New Process Instance"
+    
+    @api.depends('name', 'process_definition_id.name', 'create_date')
     def _compute_display_name(self):
         for record in self:
-            if record.process_id and record.name:
-                record.display_name = f"{record.process_id.name} - {record.name}"
-            else:
-                record.display_name = record.name or 'New Process Instance'
+            record.display_name = record.name or 'New Process Instance'
     
     def _compute_res_name(self):
         for record in self:
@@ -86,11 +120,32 @@ class ProcessInstance(models.Model):
     def action_start(self):
         """Start the process instance"""
         self.ensure_one()
-        self.write({
-            'state': 'running',
-            'started_date': fields.Datetime.now()
+        
+        # Use execution engine to start
+        from ..services.execution_engine import ExecutionEngine
+        engine = ExecutionEngine(self.env)
+        
+        # Find start event and create initial token
+        start_element = self.env['process.element'].search([
+            ('process_definition_id', '=', self.process_definition_id.id),
+            ('element_type', '=', 'startEvent')
+        ], limit=1)
+        
+        if not start_element:
+            raise UserError("No start event found in process definition")
+        
+        # Create token and execute
+        token = self.env['camoonda.process.token'].create({
+            'instance_id': self.id,
+            'current_element_id': start_element.id,
+            'state': 'active',
+            'variables': self.variables or {},
         })
-        # TODO: Create initial token and begin execution
+        
+        self.write({'started_date': fields.Datetime.now()})
+        
+        # Execute from start
+        return engine.execute_token(token.id)
         
     def action_suspend(self):
         """Suspend the process instance"""

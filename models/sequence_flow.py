@@ -45,6 +45,21 @@ class SequenceFlow(models.Model):
         help="Element where this flow ends"
     )
     
+    # Display fields showing XML element IDs
+    source_ref = fields.Char(
+        string='From',
+        compute='_compute_element_refs',
+        store=True,
+        help="Source element ID from BPMN XML"
+    )
+    
+    target_ref = fields.Char(
+        string='To',
+        compute='_compute_element_refs',
+        store=True,
+        help="Target element ID from BPMN XML"
+    )
+    
     sequence = fields.Integer(
         string='Sequence',
         default=10,
@@ -83,6 +98,14 @@ class SequenceFlow(models.Model):
          'check(source_element_id != target_element_id)',
          'Source and target elements must be different!')
     ]
+    
+    @api.depends('source_element_id', 'source_element_id.element_id', 
+                 'target_element_id', 'target_element_id.element_id')
+    def _compute_element_refs(self):
+        """Compute readable source and target references from BPMN XML IDs"""
+        for record in self:
+            record.source_ref = record.source_element_id.element_id if record.source_element_id else ''
+            record.target_ref = record.target_element_id.element_id if record.target_element_id else ''
     
     def name_get(self):
         """Display flow with source and target"""

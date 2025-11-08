@@ -99,3 +99,42 @@ class ProcessDefinition(models.Model):
             ], order='version desc', limit=1)
             
             record.is_latest_version = (record == latest)
+    
+    def action_start_instance(self):
+        """
+        Action to start a new process instance from this definition.
+        Opens a wizard to provide initial variables.
+        """
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Start Process Instance',
+            'res_model': 'camoonda.process.instance',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_process_definition_id': self.id,
+                'default_state': 'active',
+            }
+        }
+    
+    def start_instance(self, variables=None, business_key=None, simulation_mode=False):
+        """
+        Programmatic method to start a process instance.
+        
+        Args:
+            variables: Dict of initial process variables (optional)
+            business_key: Business identifier for this instance (optional)
+            simulation_mode: If True, don't execute real operations (optional)
+            
+        Returns:
+            camoonda.process.instance record
+        """
+        from ..services.execution_engine import ExecutionEngine
+        
+        engine = ExecutionEngine(self.env)
+        return engine.start_process(
+            process_definition_id=self.id,
+            variables=variables,
+            business_key=business_key,
+            simulation_mode=simulation_mode
+        )

@@ -53,6 +53,11 @@
         <field name="arch" type="xml">
             <form string="Process Definition">
                 <header>
+                    <button name="action_start_instance" 
+                            string="Start Instance" 
+                            type="object" 
+                            class="btn-primary"
+                            help="Create and start a new process instance"/>
                     <field name="active" widget="boolean_toggle"/>
                 </header>
                 <sheet>
@@ -109,8 +114,8 @@
                                 <field name="flow_ids" nolabel="1">
                                     <list string="Sequence Flows">
                                         <field name="flow_id"/>
-                                        <field name="source_element_id"/>
-                                        <field name="target_element_id"/>
+                                        <field name="source_ref"/>
+                                        <field name="target_ref"/>
                                         <field name="condition_type"/>
                                     </list>
                                 </field>

@@ -90,7 +90,7 @@
                                     <list string="Incoming Flows">
                                         <field name="flow_id"/>
                                         <field name="flow_name"/>
-                                        <field name="source_element_id"/>
+                                        <field name="source_ref"/>
                                         <field name="condition_type"/>
                                     </list>
                                 </field>
@@ -98,7 +98,7 @@
                                     <list string="Outgoing Flows">
                                         <field name="flow_id"/>
                                         <field name="flow_name"/>
-                                        <field name="target_element_id"/>
+                                        <field name="target_ref"/>
                                         <field name="condition_type"/>
                                     </list>
                                 </field>
@@ -135,8 +135,8 @@
             <list string="Sequence Flows">
                 <field name="flow_id"/>
                 <field name="flow_name"/>
-                <field name="source_element_id"/>
-                <field name="target_element_id"/>
+                <field name="source_ref"/>
+                <field name="target_ref"/>
                 <field name="condition_type"/>
                 <field name="is_default" widget="boolean"/>
                 <field name="sequence"/>
@@ -165,7 +165,9 @@
                     
                     <group string="Connection">
                         <field name="source_element_id"/>
+                        <field name="source_ref" readonly="1"/>
                         <field name="target_element_id"/>
+                        <field name="target_ref" readonly="1"/>
                     </group>
                     
                     <group string="Condition">

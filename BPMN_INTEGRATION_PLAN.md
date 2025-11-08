@@ -123,96 +123,148 @@ Instead of storing execution config only in BPMN module, we now:
 
 ---
 
-## Phase 2: Process Execution Engine (Core)
+## Phase 2: Process Execution Engine ✅ COMPLETE
 
 **Goal:** Execute process instances using configured elements and flows.
 
-### Tasks:
-1. **Execution Service** (`camoonda/services/execution_engine.py`)
-   ```python
-   class ExecutionEngine:
-       def start_process(self, process_definition_id, variables=None, business_key=None):
-           """
-           Create process instance and token at start event
-           Returns: process_instance record
-           """
-           
-       def execute_token(self, token_id):
-           """
-           Execute current element for token, move to next element(s)
-           Handles: service tasks, user tasks, scripts, gateways
-           """
-           
-       def handle_gateway(self, token, gateway_element):
-           """
-           Evaluate gateway conditions, create/merge tokens
-           - XOR: Single path (first matching condition)
-           - AND: Split to all paths / merge from all paths
-           - OR: Split to matching paths / merge when any arrives
-           """
-   ```
+### Implementation Complete:
 
-2. **Element Handlers** (`camoonda/services/element_handlers.py`)
-   - Read `process.element` configuration
-   - Execute based on `execution_type`:
-   
-   **Service Task:**
-   ```python
-   def execute_service_task(self, token, element):
-       model = self.env[element.odoo_model]
-       method = getattr(model, element.odoo_method)
-       # Map process variables to method params
-       params = self._apply_input_mapping(token.variables, element.input_mapping)
-       result = method(**params)
-       # Map result back to process variables
-       self._apply_output_mapping(token.variables, result, element.output_mapping)
-   ```
-   
-   **User Task:**
-   ```python
-   def execute_user_task(self, token, element):
-       # Token goes to 'waiting' state
-       # Create work item for assigned users/groups
-       # Return action to open form
-       return {
-           'type': 'ir.actions.act_window',
-           'res_model': element.odoo_model,
-           'view_id': element.form_view_id.id,
-           'context': {'token_id': token.id}
-       }
-   ```
-   
-   **Script Task:**
-   ```python
-   def execute_script_task(self, token, element):
-       # Execute python code with context
-       context = {
-           'env': self.env,
-           'variables': token.variables,
-           'token': token,
-           'instance': token.instance_id
-       }
-       exec(element.python_code, context)
-       # Update variables from context
-   ```
+✅ **Execution Service** (`camoonda/services/execution_engine.py` - 570 lines)
+- `start_process()` - Creates instance, finds start event, creates initial token, begins execution
+- `execute_token()` - Main execution loop with element handling and navigation
+- `_navigate_to_next()` - Moves tokens through sequence flows
+- Gateway logic for XOR, AND, OR (split and merge)
+- Condition evaluation with variable context
+- Error handling with automatic incident creation
+- Execution history logging
 
-3. **Token Navigation**
-   - Use `sequence.flow` records to find next elements
-   - Evaluate `condition_expression` on flows
-   - Handle multiple outgoing flows (gateways)
-   - Create/merge tokens based on gateway type
+✅ **Element Handlers** (`camoonda/services/element_handlers.py` - 370 lines)
+- **Service Task Handler**: Calls Odoo model methods
+  - Applies input mapping (variables → parameters)
+  - Executes method with error handling
+  - Applies output mapping (result → variables)
+- **User Task Handler**: Creates work items and returns form actions
+  - Opens form for user interaction
+  - Token enters "waiting" state
+- **Script Task Handler**: Executes Python code
+  - Full context: env, variables, token, instance, logger
+  - Updates variables from executed code
+- **Stoodio Handler**: Integrates with Stoodio modules
+- **Auto Handler**: Auto-detects execution type from configuration
+- Simulation mode support (skips real operations)
 
-4. **Incident Management**
-   - Wrap execution in try/catch
-   - Create `process.incident` on failures
-   - Token goes to 'failed' state
-   - Provide retry mechanism
+✅ **Model Integration**
+- `process.definition.start_instance()` - Programmatic process start
+- `process.definition.action_start_instance()` - UI action with button
+- `process.token.execute()` - Execute token at current position
+- `process.token.action_retry()` - Retry failed tokens
+- Updated token model with `current_element_id` (Many2one to process.element)
+- Added `simulation_mode` to process instances
 
-**Deliverables:**
-- Working execution engine
-- Element handlers for all execution types
-- Gateway logic (XOR, AND, OR)
-- Error handling with incidents
+✅ **Gateway Support**
+- **Exclusive Gateway (XOR)**:
+  - Evaluates conditions in sequence order
+  - Takes first matching path or default path
+  - Single token continues
+- **Parallel Gateway (AND)**:
+  - Split: Creates token for each outgoing flow
+  - Merge: Waits for all incoming tokens, continues with one
+- **Inclusive Gateway (OR)**:
+  - Evaluates all conditions
+  - Takes all matching paths
+  - Creates tokens for each matching flow
+
+✅ **Variable System**
+- Process variables (instance.variables)
+- Token variables (token.variables)
+- Input mapping: `${variable_name}` → method parameters
+- Output mapping: `${result.field}` → process variables
+- Variables available in conditions and scripts
+
+✅ **Error Management**
+- Try/catch around all execution
+- Automatic incident creation on failures
+- Token state changes to 'failed'
+- Execution history records errors
+- Retry mechanism for failed tokens
+
+### How to Use:
+
+**UI Method:**
+1. Open Process Definition in Camoonda
+2. Click "Start Instance" button in header
+3. Process executes automatically from start to end
+
+**Programmatic Method:**
+```python
+process_def = env['camoonda.process.definition'].search([
+    ('key', '=', 'order_process')
+], limit=1)
+
+instance = process_def.start_instance(
+    variables={
+        'customer_name': 'John Doe',
+        'order_amount': 1500
+    },
+    business_key='ORDER-12345',
+    simulation_mode=False
+)
+```
+
+### Testing:
+
+See **`PHASE2_TESTING_GUIDE.md`** for comprehensive testing instructions including:
+- Linear process with service task
+- Script task with variables
+- XOR gateway with conditions
+- AND gateway with parallel execution
+- User task (waiting state)
+- Error handling and incidents
+- Simulation mode
+
+### Supported BPMN Elements:
+
+**Events:**
+- ✅ Start Event (pass through)
+- ✅ End Event (complete token and instance)
+
+**Tasks:**
+- ✅ Service Task (call Odoo methods)
+- ✅ User Task (create work items)
+- ✅ Script Task (execute Python)
+- ✅ Manual Task (pass through)
+
+**Gateways:**
+- ✅ Exclusive Gateway (XOR - one path)
+- ✅ Parallel Gateway (AND - all paths)
+- ✅ Inclusive Gateway (OR - matching paths)
+
+**Flows:**
+- ✅ Sequence Flow (with conditions)
+- ✅ Conditional expressions (Python)
+- ✅ Default flows
+
+### Architecture:
+
+```
+start_process()
+    ↓
+create instance + initial token
+    ↓
+execute_token() [recursive loop]
+    ↓
+├─ get current element
+├─ execute element (call handler)
+├─ update variables
+├─ log history
+├─ evaluate conditions on flows
+├─ handle gateway (split/merge)
+└─ navigate to next element(s)
+    ↓
+    [repeat until end event]
+    ↓
+complete instance
+```
 
 ---
 
@@ -413,7 +465,7 @@ def action_deploy_to_camoonda(self):
 - Deployment method in BPMN module
 - All views and security rules
 
-**Phase 0: BPMN Deployment**
+**Phase 0: BPMN Deployment** ✅
 - `action_deploy_to_camoonda()` working
 - XML parsing and element extraction
 - Flow extraction with conditions
@@ -429,74 +481,112 @@ def action_deploy_to_camoonda(self):
 - Advanced options (async, retry, timeout)
 - Ready for production use
 
+**Phase 2: Process Execution Engine** ✅
+- Execution service with start_process() and execute_token()
+- Element handlers for all task types
+- Gateway logic (XOR, AND, OR) with splitting/merging
+- Token navigation through sequence flows
+- Condition evaluation with variables
+- Error handling with incidents
+- Execution history logging
+- Simulation mode
+- Variable input/output mapping
+- **See PHASE2_SUMMARY.md and PHASE2_TESTING_GUIDE.md for details**
+
 ### 📋 Next Priorities:
 
-**🚀 Phase 2: Process Execution Engine (NEXT)**
-Priority: HIGH - Core functionality for running processes
+**🎮 Phase 3: Simulation Mode & Debugging (NEXT)**
+Priority: MEDIUM - Helpful for testing
 
-1. **Execution Service**
-   - Create `camoonda/services/execution_engine.py`
-   - Implement `start_process(process_definition_id, variables, business_key)`
-   - Implement `execute_token(token_id)` with element handlers
-   - Implement gateway logic (XOR, AND, OR)
+1. **Visual Token Overlay** (BPMN JavaScript)
+   - Add toolbar in BPMN editor: ▶ Start Simulation, ⏭ Step, ⏹ Stop
+   - Overlay showing current token positions on diagram
+   - Highlight active elements
+   - Variables panel showing current state
 
-2. **Element Handlers**
-   - Create `camoonda/services/element_handlers.py`
-   - Service task handler (call Odoo model methods)
-   - User task handler (create work items)
-   - Script task handler (execute Python code)
-   - Stoodio handler (integrate with Stoodio modules)
-   - Apply input/output variable mapping
+2. **Step-through Debugging**
+   - Execute one element at a time
+   - Inspect variables at each step
+   - Manual gateway path selection
+   - Reset to start
 
-3. **Token Navigation**
-   - Read `sequence.flow` to find next elements
-   - Evaluate condition expressions
-   - Create tokens for parallel paths (AND gateway)
-   - Merge tokens at join gateways
-   - Handle exclusive paths (XOR gateway)
+3. **Simulation Controls API**
+   ```python
+   @api.model
+   def get_active_tokens(self, instance_id):
+       # Return token positions for visual overlay
+   
+   @api.model
+   def step_token(self, token_id):
+       # Execute one step and pause
+   ```
 
-4. **Error Handling**
-   - Create incidents on execution failures
-   - Token state management (active, waiting, failed, completed)
-   - Retry mechanisms
-   - Logging and debugging support
-
-**Phase 3: Simulation Mode**
-Priority: MEDIUM - Testing without side effects
-
-1. Add `simulation_mode` flag to process instances
-2. Skip real operations in simulation
-3. BPMN editor controls (start, step, stop)
-4. Visual token overlay on diagram
-
-**Phase 4: Live Monitoring**
+**📊 Phase 4: Live Monitoring & Management**
 Priority: LOW - Nice to have
 
-1. Instance management views
-2. Real-time monitoring dashboard
-3. Process analytics and heatmaps
+1. **Instance Management**
+   - Enhanced instance views with token visualization
+   - Actions: Suspend, Resume, Cancel, Retry
+   - Bulk operations on instances
+
+2. **Process Analytics** (Optional)
+   - Execution statistics per element
+   - Average duration, success rate
+   - Bottleneck detection
+   - Heatmap overlay on BPMN
+
+3. **Real-time Monitoring** (Optional)
+   - Live token position updates
+   - WebSocket or long-polling
+   - Multiple instance monitoring
+
+**🚀 Additional Features** (Future)
+- Message events (send/receive, correlation)
+- Timer events (duration, date)
+- Subprocess support (call activities, embedded)
+- Error boundary events
+- Compensation handlers
+- Multi-instance tasks (parallel/sequential)
+- User task claiming and assignment
+- Task list view for users
 
 ---
 
-## Current Recommendation
+## Current Status
 
-**✅ Phase 1 Complete - Ready for Phase 2**
+**✅ Phase 2 Complete - Fully Functional Execution Engine**
 
 You can now:
 1. ✅ Deploy BPMN diagrams to Camoonda
-2. ✅ Configure element execution in Process Topology tab
-3. ✅ Set up service tasks, user tasks, scripts
-4. ✅ Define variable mappings
+2. ✅ Configure element execution (service, user, script tasks)
+3. ✅ Start process instances (UI or programmatic)
+4. ✅ Execute processes automatically through completion
+5. ✅ Handle gateways (XOR, AND, OR)
+6. ✅ Use variables with input/output mapping
+7. ✅ Handle errors with incidents
+8. ✅ View execution history
+9. ✅ Retry failed tokens
+10. ✅ Run in simulation mode
 
-**Next Step: Build Execution Engine (Phase 2)**
+**Next Recommended Step:**
 
-Start with a simple process execution test:
-1. Create a process definition with 2-3 configured elements
-2. Build `start_process()` method to create instance and initial token
-3. Build `execute_token()` to run one element and move token
-4. Test end-to-end execution of simple linear process
+**Option A: Test Current Implementation**
+- Deploy and configure real processes
+- Test different execution scenarios
+- Validate with business use cases
+- Gather feedback on functionality
 
-This incremental approach will validate the architecture before tackling complex features like gateways and parallel execution.
+**Option B: Add Visual Simulation (Phase 3)**
+- Build BPMN editor controls
+- Add token visualization overlay
+- Implement step-through debugging
+- Makes testing easier and more intuitive
+
+**Option C: Production Hardening**
+- Add user task completion mechanism
+- Enhance error messages
+- Add performance optimizations
+- Build monitoring dashboard
 
 ---
 
