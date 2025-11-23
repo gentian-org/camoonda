@@ -108,12 +108,11 @@ class ProcessDefinition(models.Model):
         return {
             'type': 'ir.actions.act_window',
             'name': 'Start Process Instance',
-            'res_model': 'camoonda.process.instance',
+            'res_model': 'camoonda.start.instance.wizard',
             'view_mode': 'form',
             'target': 'new',
             'context': {
                 'default_process_definition_id': self.id,
-                'default_state': 'active',
             }
         }
     

@@ -29,6 +29,7 @@ Features:
         'views/deployment_views.xml',
         'views/process_instance_views.xml',
         'views/process_incident_views.xml',
+        'wizard/start_instance_wizard_views.xml',
         'views/process_definition_views.xml',
         'views/camoonda_menus.xml',
     ],

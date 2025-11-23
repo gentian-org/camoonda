@@ -61,36 +61,9 @@ class ExecutionEngine:
         
         _logger.info(f"Created process instance {instance.id}")
         
-        # Find start event
-        start_element = self.env['process.element'].search([
-            ('process_definition_id', '=', process_definition_id),
-            ('element_type', '=', 'startEvent')
-        ], limit=1)
-        
-        if not start_element:
-            raise ValidationError(_("No start event found in process definition"))
-        
-        # Create initial token at start event
-        token = self.env['camoonda.process.token'].create({
-            'instance_id': instance.id,
-            'current_element_id': start_element.id,
-            'state': 'active',
-            'variables': variables or {},
-        })
-        
-        _logger.info(f"Created initial token {token.id} at start event {start_element.element_id}")
-        
-        # Log history
-        self.env['camoonda.execution.history'].create({
-            'instance_id': instance.id,
-            'token_id': token.id,
-            'element_id': start_element.id,
-            'event_type': 'element_started',
-            'details': f"Process instance started at {start_element.element_name or start_element.element_id}",
-        })
-        
-        # Immediately execute the start event (which just moves to next element)
-        self.execute_token(token.id)
+        # Note: The create() method of process.instance automatically calls action_start()
+        # which creates the initial token and starts execution.
+        # We don't need to do it here to avoid double execution.
         
         return instance
     

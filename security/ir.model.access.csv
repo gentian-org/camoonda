@@ -19,3 +19,4 @@ access_camoonda_element_implementation_user,camoonda.element.implementation user
 access_camoonda_element_implementation_manager,camoonda.element.implementation manager,model_camoonda_element_implementation,base.group_system,1,1,1,1
 access_camoonda_execution_history_user,camoonda.execution.history user,model_camoonda_execution_history,base.group_user,1,0,0,0
 access_camoonda_execution_history_manager,camoonda.execution.history manager,model_camoonda_execution_history,base.group_system,1,1,1,1
+access_camoonda_start_instance_wizard_user,camoonda.start.instance.wizard user,model_camoonda_start_instance_wizard,base.group_user,1,1,1,1

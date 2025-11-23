@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_start_instance_wizard_form" model="ir.ui.view">
+        <field name="name">camoonda.start.instance.wizard.form</field>
+        <field name="model">camoonda.start.instance.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Start Process Instance">
+                <group>
+                    <field name="process_definition_id"/>
+                    <field name="business_key"/>
+                </group>
+                <group string="Initial Variables">
+                    <field name="variables_json" widget="ace" options="{'mode': 'json'}" style="min-height: 200px;"/>
+                </group>
+                <footer>
+                    <button name="action_start" string="Start Process" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>
