@@ -160,27 +160,29 @@ class ExecutionEngine:
         except Exception as e:
             _logger.exception(f"Error executing token {token_id} at element {element.element_id}")
             
-            # Create incident
-            self.env['camoonda.process.incident'].create({
-                'instance_id': instance.id,
-                'token_id': token.id,
-                'element_id': element.id,
-                'incident_type': 'execution_error',
-                'message': str(e),
-                'state': 'open',
-            })
-            
-            # Update token state
-            token.write({'state': 'failed'})
-            
-            # Log error
-            self.env['camoonda.execution.history'].create({
-                'instance_id': instance.id,
-                'token_id': token.id,
-                'element_id': element.id,
-                'event_type': 'element_failed',
-                'details': f"Error: {str(e)}",
-            })
+            # Use savepoint to ensure we can log the incident even if transaction is aborted
+            with self.env.cr.savepoint():
+                # Create incident
+                self.env['camoonda.process.incident'].create({
+                    'instance_id': instance.id,
+                    'token_id': token.id,
+                    'element_id': element.id,
+                    'incident_type': 'unhandled_error',
+                    'message': str(e),
+                    'state': 'created',
+                })
+                
+                # Update token state
+                token.write({'state': 'failed'})
+                
+                # Log error
+                self.env['camoonda.execution.history'].create({
+                    'instance_id': instance.id,
+                    'token_id': token.id,
+                    'element_id': element.id,
+                    'event_type': 'element_failed',
+                    'details': f"Error: {str(e)}",
+                })
             
             raise
     

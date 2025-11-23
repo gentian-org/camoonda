@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import logging
 from odoo import models, fields, api
 from odoo.exceptions import UserError
+
+_logger = logging.getLogger(__name__)
 
 
 class ProcessInstance(models.Model):
@@ -116,6 +119,30 @@ class ProcessInstance(models.Model):
             active_incidents = record.incident_ids.filtered(lambda i: i.state == 'created')
             record.incident_count = len(active_incidents)
             record.has_incidents = record.incident_count > 0
+    
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Override create to automatically start execution"""
+        instances = super().create(vals_list)
+        
+        # Auto-start execution for each new instance
+        for instance in instances:
+            try:
+                # Use savepoint to prevent transaction rollback on error
+                with self.env.cr.savepoint():
+                    instance.action_start()
+            except Exception as e:
+                # If auto-start fails, log it but don't block creation
+                _logger.error(f"Failed to auto-start instance {instance.id}: {e}")
+                # Create incident
+                self.env['camoonda.process.incident'].create({
+                    'instance_id': instance.id,
+                    'incident_type': 'unhandled_error',
+                    'message': f'Failed to auto-start: {str(e)}',
+                    'state': 'created',
+                })
+        
+        return instances
     
     def action_start(self):
         """Start the process instance"""

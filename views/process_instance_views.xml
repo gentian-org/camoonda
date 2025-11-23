@@ -84,9 +84,9 @@
                                     <field name="execution_date"/>
                                     <field name="element_id"/>
                                     <field name="element_name"/>
-                                    <field name="result"/>
+                                    <field name="event_type"/>
+                                    <field name="details"/>
                                     <field name="executed_by"/>
-                                    <field name="duration_ms"/>
                                 </list>
                             </field>
                         </page>
@@ -98,7 +98,7 @@
                                     <field name="element_id"/>
                                     <field name="severity"/>
                                     <field name="state"/>
-                                    <field name="error_message"/>
+                                    <field name="message"/>
                                 </list>
                             </field>
                         </page>

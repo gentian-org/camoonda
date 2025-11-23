@@ -19,10 +19,13 @@ In Camoonda:
 1. Open the deployed **Process Definition**
 2. Go to **"Process Topology"** tab
 3. Click on **"Create Partner"** task
-4. Configure:
-   - **Execution Type**: `Service Task`
+4. Go to **"Execution"** tab
+5. Configure:
+   - **Execution Type**: Select **"Call Odoo Method"** (this is the service task)
    - **Odoo Model**: `res.partner`
-   - **Odoo Method**: `create`
+   - **Method Name**: `create`
+6. Go to **"Variables"** tab
+7. Configure:
    - **Input Mapping**:
      ```json
      {
@@ -36,7 +39,7 @@ In Camoonda:
        "partner_id": "${result.id}"
      }
      ```
-5. **Save**
+8. **Save**
 
 ---
 
@@ -80,8 +83,10 @@ Still in Process Definition form:
 ### Configure
 
 Replace service task with script task:
-- **Execution Type**: `Script Task`
-- **Python Code**:
+1. Click on the task element
+2. Go to **"Execution"** tab
+3. **Execution Type**: Select **"Python Code"**
+4. **Python Code**:
   ```python
   # Calculate something
   order_amount = 1000
@@ -94,6 +99,7 @@ Replace service task with script task:
   
   logger.info(f"Calculated: {variables['message']}")
   ```
+5. **Save**
 
 ### Run
 
@@ -205,16 +211,18 @@ failed_token.action_retry()
 - Check model name is correct: `res.partner`, not `res_partner`
 - Check method exists: `create`, not `Create`
 - Check spelling
+- Make sure you selected "Call Odoo Method" not just any execution type
 
 ### Token stuck at "waiting"
-- This is normal for user tasks
-- Script/service tasks should complete automatically
+- This is normal for "Open Form" (user tasks)
+- "Call Odoo Method" and "Python Code" tasks should complete automatically
 - Check execution history for errors
 
 ### No partner created
 - Check simulation_mode is False
-- Check input mapping syntax
+- Check input mapping syntax (must be valid JSON)
 - Look at incidents for errors
+- Verify you selected "Call Odoo Method" execution type
 
 ---
 
@@ -252,7 +260,9 @@ kubectl -n odoo logs deployment/odoo --tail=100 | grep camoonda
 ## Success Checklist
 
 - [ ] BPMN diagram deployed to Camoonda
-- [ ] Service task configured with model/method
+- [ ] Service task configured with "Call Odoo Method" execution type
+- [ ] Odoo Model and Method Name filled in
+- [ ] Input/Output mapping configured in Variables tab
 - [ ] Process started from UI button
 - [ ] Instance reached "completed" state
 - [ ] Expected side effect occurred (partner created, etc.)

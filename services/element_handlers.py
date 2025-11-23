@@ -56,7 +56,11 @@ class ElementHandlers:
             method = getattr(model, element.odoo_method)
             
             # Execute the method
-            result = method(**method_params) if method_params else method()
+            # Handle Odoo create/write methods which expect a dictionary
+            if element.odoo_method in ('create', 'write') and method_params:
+                result = method(method_params)
+            else:
+                result = method(**method_params) if method_params else method()
             
             _logger.info(f"Service task completed, result type: {type(result)}")
             

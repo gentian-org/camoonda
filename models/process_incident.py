@@ -48,7 +48,8 @@ class ProcessIncident(models.Model):
     element_name = fields.Char(string='Element Name')
     element_type = fields.Char(string='Element Type')
     
-    error_message = fields.Text(string='Error Message', required=True)
+    message = fields.Text(string='Message', required=True)
+    error_message = fields.Text(related='message', string='Error Message', readonly=False)
     error_type = fields.Char(string='Error Type', help="Python exception class or error code")
     stack_trace = fields.Text(string='Stack Trace')
     
@@ -150,20 +151,20 @@ class ProcessIncident(models.Model):
         }
     
     @api.model
-    def create_incident(self, instance_id, incident_type, error_message, **kwargs):
+    def create_incident(self, instance_id, incident_type, message, **kwargs):
         """
         Helper method to create incidents programmatically
         
         :param instance_id: ID of the process instance
         :param incident_type: Type of incident
-        :param error_message: Error message
+        :param message: Error message
         :param kwargs: Additional fields (element_id, error_type, stack_trace, etc.)
         :return: Created incident record
         """
         vals = {
             'instance_id': instance_id,
             'incident_type': incident_type,
-            'error_message': error_message,
+            'message': message,
         }
         vals.update(kwargs)
         

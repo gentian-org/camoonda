@@ -15,7 +15,7 @@
                 <field name="instance_id"/>
                 <field name="severity"/>
                 <field name="state"/>
-                <field name="error_message"/>
+                <field name="message"/>
             </list>
         </field>
     </record>
@@ -70,7 +70,7 @@
                     </group>
                     <group string="Error Details">
                         <field name="error_type"/>
-                        <field name="error_message" nolabel="1"/>
+                        <field name="message" nolabel="1"/>
                     </group>
                     <notebook>
                         <page string="Stack Trace" invisible="('stack_trace', '=', False)">
@@ -107,7 +107,7 @@
             <search string="Search Incidents">
                 <field name="instance_id"/>
                 <field name="element_id"/>
-                <field name="error_message"/>
+                <field name="message"/>
                 <filter string="Active Incidents" name="active_incidents" domain="[('state', '=', 'created')]"/>
                 <filter string="Resolved" name="resolved" domain="[('state', '=', 'resolved')]"/>
                 <separator/>
