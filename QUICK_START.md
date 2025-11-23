@@ -91,10 +91,11 @@ Replace service task with script task:
   # Calculate something
   order_amount = 1000
   discount = 0.10
+  final_amount = order_amount * (1 - discount)
   
   variables['order_amount'] = order_amount
   variables['discount'] = discount
-  variables['final_amount'] = order_amount * (1 - discount)
+  variables['final_amount'] = final_amount
   variables['message'] = f"Order: ${final_amount}"
   
   logger.info(f"Calculated: {variables['message']}")

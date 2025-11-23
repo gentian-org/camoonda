@@ -136,6 +136,16 @@ class ExecutionEngine:
             # Execute based on element type
             result = self._execute_element(token, element)
             
+            # Sync token variables to instance
+            if token.variables:
+                current_vars = instance.variables or {}
+                # Only update if there are changes
+                if token.variables != current_vars:
+                    # Merge token variables into instance variables
+                    new_vars = current_vars.copy()
+                    new_vars.update(token.variables)
+                    instance.write({'variables': new_vars})
+            
             # Handle different result types
             if result.get('status') == 'waiting':
                 # User task or external task - token waits
@@ -184,7 +194,7 @@ class ExecutionEngine:
                     'details': f"Error: {str(e)}",
                 })
             
-            raise
+            return {'status': 'failed', 'error': str(e)}
     
     def _execute_element(self, token, element):
         """

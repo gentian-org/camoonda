@@ -55,6 +55,11 @@ class ProcessInstance(models.Model):
     
     # Process variables (stored as JSON)
     variables = fields.Json(string='Process Variables', default={})
+    variables_display = fields.Text(
+        string='Variables (JSON)',
+        compute='_compute_variables_display',
+        help="Formatted JSON string for display"
+    )
     
     # Link to business object
     res_model = fields.Char(string='Related Model')
@@ -120,6 +125,18 @@ class ProcessInstance(models.Model):
             record.incident_count = len(active_incidents)
             record.has_incidents = record.incident_count > 0
     
+    @api.depends('variables')
+    def _compute_variables_display(self):
+        import json
+        for record in self:
+            if record.variables:
+                try:
+                    record.variables_display = json.dumps(record.variables, indent=2)
+                except Exception:
+                    record.variables_display = str(record.variables)
+            else:
+                record.variables_display = '{}'
+    
     @api.model_create_multi
     def create(self, vals_list):
         """Override create to automatically start execution"""
@@ -180,7 +197,7 @@ class ProcessInstance(models.Model):
         
     def action_resume(self):
         """Resume a suspended process instance"""
-        self.write({'state': 'running'})
+        self.write({'state': 'active'})
         
     def action_cancel(self):
         """Cancel the process instance"""

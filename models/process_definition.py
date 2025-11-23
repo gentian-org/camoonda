@@ -55,7 +55,7 @@ class ProcessDefinition(models.Model):
     ], string='Category')
     
     # Relations
-    instance_ids = fields.One2many('camoonda.process.instance', 'process_id', string='Process Instances')
+    instance_ids = fields.One2many('camoonda.process.instance', 'process_definition_id', string='Process Instances')
     instance_count = fields.Integer(string='Instance Count', compute='_compute_instance_count')
     
     element_ids = fields.One2many(
